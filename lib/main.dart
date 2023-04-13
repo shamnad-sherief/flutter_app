@@ -1,6 +1,7 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:like_button/like_button.dart';
 
 void main() {
   runApp(MyApp());
@@ -34,6 +35,27 @@ class MyAppState extends ChangeNotifier {
     current = WordPair.random();
     notifyListeners();
   }
+
+  var favorites = <WordPair>[];
+
+  void toggleFavorite() {
+    if (favorites.contains(current)) {
+      favorites.remove(current);
+    } else {
+      favorites.add(current);
+    }
+    print(favorites);
+    // notifyListeners();
+  }
+
+  Future<bool> onLikeButtonTapped(bool isLiked) async {
+    toggleFavorite();
+
+    return !isLiked;
+
+    /// if failed, you can do nothing
+    // return success? !isLiked:isLiked;
+  }
 }
 
 class MyHomePage extends StatelessWidget {
@@ -49,11 +71,19 @@ class MyHomePage extends StatelessWidget {
           children: [
             Text('A random idea:'),
             BigCard(pair: pair),
-            ElevatedButton(
-              onPressed: () {
-                appState.getNext();
-              },
-              child: Text('Next'),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LikeButton(
+                  onTap: appState.onLikeButtonTapped,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    appState.getNext();
+                  },
+                  child: Text('Next'),
+                ),
+              ],
             ),
           ],
         ),
