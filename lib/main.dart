@@ -45,16 +45,7 @@ class MyAppState extends ChangeNotifier {
       favorites.add(current);
     }
     print(favorites);
-    // notifyListeners();
-  }
-
-  Future<bool> onLikeButtonTapped(bool isLiked) async {
-    toggleFavorite();
-
-    return !isLiked;
-
-    /// if failed, you can do nothing
-    // return success? !isLiked:isLiked;
+    notifyListeners();
   }
 }
 
@@ -65,29 +56,32 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePage extends State<MyHomePage> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Index 0: Home',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 1: Wishlist',
-      style: optionStyle,
-    ),
-  ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  var myAppState = MyAppState();
+
+  Future<bool> onLikeButtonTapped(bool isLiked) async {
+    myAppState.toggleFavorite();
+
+    return !isLiked;
   }
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
+    Widget page;
+    switch (_selectedIndex) {
+      case 0:
+        break;
+      case 1:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => FavoritesPage()));
+        });
+        break;
+      default:
+        throw UnimplementedError('no widget for $_selectedIndex');
+    }
 
     return Scaffold(
       body: Center(
@@ -100,7 +94,7 @@ class _MyHomePage extends State<MyHomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 LikeButton(
-                  onTap: appState.onLikeButtonTapped,
+                  onTap: onLikeButtonTapped,
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -124,9 +118,19 @@ class _MyHomePage extends State<MyHomePage> {
             label: 'Wishlist',
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: 0,
         selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
+        onTap: (index) {
+          // Handle tap on bottom navigation bar items
+          if (index == 1) {
+            // Navigate to home page
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => FavoritesPage()),
+            );
+          }
+          // No need to navigate when tapping on the currently selected "Wishlist" tab
+        },
       ),
     );
   }
@@ -154,6 +158,44 @@ class BigCard extends StatelessWidget {
           pair.asLowerCase,
           style: style,
         ),
+      ),
+    );
+  }
+}
+
+class FavoritesPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Replace this with your actual implementation of the favorites page
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Favorites'),
+      ),
+      body: Center(
+        child: Text(
+            'Display list of favorite items here'), // Replace with your actual list of favorite items
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Wishlist',
+          ),
+        ],
+        currentIndex: 1,
+        selectedItemColor: Colors.amber[800],
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyHomePage()),
+            );
+          }
+        },
       ),
     );
   }
